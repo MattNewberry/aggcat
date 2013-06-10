@@ -107,11 +107,9 @@ module Aggcat
           result[:challenge_session_id] = response['challengeSessionId']
           result[:challenge_node_id] = response['challengeNodeId']
         end
-        raise AggcatError.new response.code if response.code.to_i < 200 || response.code.to_i >= 400
         return result
       rescue => e
-        raise e if tries >= 1
-        puts "failed to make API call - #{e.message}, retrying"
+        raise AggcatError.new response.code if tries >= 1
         oauth_token(true)
         tries += 1
       end while tries == 1

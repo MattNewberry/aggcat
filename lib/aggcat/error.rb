@@ -4,7 +4,6 @@ class AggcatError < StandardError
     self.code = code.to_i
 
     codes = {
-      200 => "If the call is successful, then the HTTP response code is 200 and the XML response does not include the Error element. Note:  Even if the response code is 200, an error might have been detected by Data Services for QuickBooks Desktop.  In this case, the XML response includes an Error element.  The following sections on this page provide details about the Error element.",
       400 => "If the URL or variables are not in the correct format this error will display.",
       401 => "If the OAuth access token has expired, been revoked, or is invalid for some other reason, then the HTTP response code is 401.",
       403 => "If a refresh request was issued for a locked login (a login in 103 status) but new credentials were not supplied in the InstitutionLogin.",
