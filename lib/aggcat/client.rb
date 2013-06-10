@@ -109,7 +109,8 @@ module Aggcat
         end
         return result
       rescue => e
-        raise AggcatError.new response.code if tries >= 1
+        raise e if tries >= 1
+        puts "failed to make API call - #{e.message}, retrying"
         oauth_token(true)
         tries += 1
       end while tries == 1
