@@ -21,7 +21,7 @@ gem 'aggcat'
 
 ## Start Guide
 
-Register for [Intuit Customer Account Data](http://developer.intuit.com/agg-cat/index.html).
+Register for [Intuit Customer Account Data](https://developer.intuit.com/docs/0020_customeraccountdata/0005_service_features).
 
 Get your OAuth data.
 
@@ -47,48 +47,66 @@ client = Aggcat::Client.new(
   customer_id: 'scope for all requests'
 )
 
-# scope Aggcat client and all subsequent requests by customer id
-Aggcat.scope(customer_id)
+# create an scoped client by customer_id
+client = Aggcat.scope(customer_id)
 
 # get all supported financial institutions
-Aggcat.institutions
+client.institutions
 
 # get details for Bank of America
-Aggcat.institution(14007)
+client.institution(14007)
 
 # add new financial account to aggregate from Bank of America
-Aggcat.discover_and_add_accounts(14007, username, password)
+response = client.discover_and_add_accounts(14007, username, password)
+
+# in case MFA is required
+questions = response[:result][:challenges]
+answers = ['first answer', 'second answer']
+challenge_session_id = response[:challenge_session_id]
+challenge_node_id = response[:challenge_node_id]
+client.account_confirmation(14007, challenge_session_id, challenge_node_id, answers)
 
 # get already aggregated financial account
-Aggcat.account(account_id)
-
-# you can set scope inline for any request
-Aggcat.scope(customer1).account(account_id)
+client.account(account_id)
 
 # get all aggregated accounts
-Aggcat.accounts
-
-# update login credentials
-Aggcat.update_login(institution_id, login_id, new_username, new_password)
-
-# delete account
-Aggcat.delete_account(account_id)
+client.accounts
 
 # get account transactions
-Aggcat.account_transactions(account_id, start_date, end_date)
+start_date = Date.today - 30
+end_date = Date.today # optional
+client.account_transactions(account_id, start_date, end_date)
+
+# update account type
+client.update_account_type(account_id, 'CREDITCARD')
+
+# update login credentials
+client.update_login(institution_id, login_id, new_username, new_password)
+
+# in case MFA is required
+client.update_login_confirmation(login_id, challenge_session_id, challenge_node_id, answers)
+
+# you can set scope inline for any request
+Aggcat.scope(customer_id).account(account_id)
+
+# delete account
+client.delete_account(account_id)
 
 # delete customer for the current scope
-Aggcat.delete_customer
-
+client.delete_customer
 ```
 
 ## Documentation
 
-Please make sure to read Intuit's [Account Data API](http://docs.developer.intuit.com/0020_Aggregation_Categorization_Apps/AggCat_API/0020_API_Documentation) docs.
+Please make sure to read Intuit's [Account Data API](http://docs.developer.intuit.com/0020_Aggregation_Categorization_Apps/AggCat_API/0020_API_Documentation).
+
+[API Use Cases](https://developer.intuit.com/docs/0020_customeraccountdata/customer_account_data_api/0005_key_concepts).
+
+[Testing Calls to the API](https://developer.intuit.com/docs/0020_customeraccountdata/customer_account_data_api/testing_calls_to_the_api).
 
 ## Requirements
 
-* Ruby 1.9.2 or higher
+* Ruby 1.9.3 or higher
 
 ## Copyright
 Copyright (c) 2013 Gene Drabkin.

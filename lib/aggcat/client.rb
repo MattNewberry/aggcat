@@ -52,6 +52,11 @@ module Aggcat
       get(path)
     end
 
+    def login_accounts(login_id)
+      validate(login_id: login_id)
+      get("/logins/#{login_id}/accounts")
+    end
+
     def update_login(institution_id, login_id, username, password, username_key=nil, password_key=nil)
       validate(institution_id: institution_id, login_id: login_id, username: username, password: password)
       body = credentials(institution_id, username, password, username_key=nil, password_key=nil)
@@ -64,18 +69,22 @@ module Aggcat
       put("/logins/#{login_id}?refresh=true", challenge_answers(answers), headers)
     end
 
+    def update_account_type(account_id, type)
+      validate(account_id: account_id, type: type)
+      put("/accounts/#{account_id}", account_type(type))
+    end
+
     def delete_account(account_id)
       validate(account_id: account_id)
       delete("/accounts/#{account_id}")
     end
 
     def delete_customer
-      if accounts[:result][:account_list]
-        accounts[:result][:account_list].values.flatten.each do |account|
-          delete_account(account[:account_id])
-        end
+      result = delete('/customers')
+      if result[:status_code] == '200'
+        @oauth_token = nil
       end
-      delete('/customers')
+      result
     end
 
     protected
@@ -161,6 +170,30 @@ module Aggcat
       end
     end
 
+    def account_type(type)
+      xml = Builder::XmlMarkup.new
+      if BANKING_TYPES.include?(type)
+        xml.tag!('ns4:BankingAccount', {'xmlns:ns4' => BANKING_ACCOUNT_NAMESPACE}) do
+          xml.tag!('ns4:bankingAccountType', type)
+        end
+      elsif CREDIT_TYPES.include?(type)
+        xml.tag!('ns4:CreditAccount', {'xmlns:ns4' => CREDIT_ACCOUNT_NAMESPACE}) do
+          xml.tag!('ns4:creditAccountType', type)
+        end
+      elsif LOAN_TYPES.include?(type)
+        xml.tag!('ns4:Loan', {'xmlns:ns4' => LOAN_NAMESPACE}) do
+          xml.tag!('ns4:loanType', type)
+        end
+      elsif INVESTMENT_TYPES.include?(type)
+        xml.tag!('ns4:InvestmentAccount', {'xmlns:ns4' => INVESTMENT_ACCOUNT_NAMESPACE}) do
+          xml.tag!('ns4:investmentAccountType', type)
+        end
+      else
+        xml.tag!('ns4:RewardAccount', {'xmlns:ns4' => REWARD_ACCOUNT_NAMESPACE}) do
+          xml.tag!('ns4:rewardAccountType')
+        end
+      end
+    end
   end
 end
 
