@@ -87,8 +87,6 @@ module Aggcat
       result
     end
 
-    protected
-
     def get(path, headers = {})
       request(:get, path, headers)
     end
